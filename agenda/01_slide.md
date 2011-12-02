@@ -15,15 +15,14 @@
 
 * The end of free lunch
 * Concurrency != Parallelism
-* Issues
 
 !SLIDE bullets incremental transition=fade
 
 # Common issues
 
-* Deadlocks
-* Livelocks 
-* Race conditions 
+* Deadlock
+* Livelock 
+* Race condition
 * Starvation 
 
 

@@ -3,7 +3,7 @@
 # Common techniques 
 
 * Locks, Actors, Dataflow, STM
-* By convention/library Vs Language baked
+* Convention (library) Vs Language based
 
 !SLIDE bullets incremental transition=fade
 
@@ -17,6 +17,6 @@
 
 # Lock pitfalls 
 
-* 
+  
 
 
