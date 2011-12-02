@@ -1,0 +1,10 @@
+
+
+/* bullets */
+div.content li {
+  text-align: left;
+}
+
+div.content li:before {
+	content: "\00BB \0020";
+}
