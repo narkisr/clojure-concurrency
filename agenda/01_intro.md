@@ -20,9 +20,9 @@
 
 # Common issues
 
-* Deadlock
-* Livelock 
-* Race condition
+* Deadlocks
+* Livelocks 
+* Race conditions
 * Starvation 
 
 
