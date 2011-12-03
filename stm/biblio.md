@@ -1,4 +1,5 @@
-!SLIDE smbullets incremental transition=fade
+!SLIDE bullets incremental transition=fade
+
 # Stm resources
 
 * [Snapshot isolation](http://en.wikipedia.org/wiki/Snapshot_isolation)
