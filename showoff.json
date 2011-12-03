@@ -1,6 +1,7 @@
 { "name": "Clojure concurrency introduction",
   "sections": [ 
     {"section":"agenda"},
-    {"section":"clojure"}
+    {"section":"clojure"},
+    {"section":"stm"}
    ]
 }
