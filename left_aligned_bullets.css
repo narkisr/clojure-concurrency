@@ -7,3 +7,22 @@ div.bullets li {
 div.bullets > ul > li:before {
   content: "\00BB \0020";
 }
+
+div.content > table,tr,td {
+    border-right: 2px solid #8b8;
+    border-bottom: 2px solid #8b8;
+    font-weight: bold;
+    margin-top:1.2em;
+    margin-left:auto;
+    margin-right:auto;
+    white-space: pre;
+    font-size: 1.5em;
+
+}
+
+div.content > tr,td {
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}

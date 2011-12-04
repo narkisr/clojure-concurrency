@@ -24,7 +24,6 @@
 
 ![Persistent vector](persistentvector.png "persistent-vector")
 
-
 !SLIDE full-page-image
 
 ![Persistent vector](bin-map.png "binary partitoining")
@@ -54,7 +53,6 @@
       } 
 
 !SLIDE code small
-title 
 
-    @@@ lang
-    code
+    @@@ clojure
+     code
