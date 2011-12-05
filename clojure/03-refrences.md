@@ -17,7 +17,10 @@
 !SLIDE bullets incremental transition=fade
 # Vars intro
 
-* points
+* Per thread global store
+* defn and def use var
+* Dynamic bindings 
+* Mutation: set!, def, defn
 
 !SLIDE code execute
 # Vars example
@@ -42,14 +45,58 @@
 # Vars usage 
 
 * Per thread storage is required
-* Clojure has build in Vars (*out*)
-* def and defn
+* Configuration (like \*out\*)
+* AOP in functions
 
+
+!SLIDE code 
+# Var implementation constructor
+
+    @@@ java
+    Var(Namespace ns, Symbol sym, Object root){
+      this(ns, sym);
+      this.root = root;
+      ++rev;
+    }
+
+!SLIDE code small
+# Vars implementation bindings 
+
+    @@@ java
+    static final ThreadLocal<Frame> dvals = new ThreadLocal<Frame>(){
+
+      protected Frame initialValue(){
+           return new Frame();
+      }
+    };
+
+    public static void pushThreadBindings(Associative bindings){
+      Frame f = dvals.get();
+      Associative bmap = f.bindings;
+      for(ISeq bs = bindings.seq(); bs != null; bs = bs.next())
+            {
+            IMapEntry e = (IMapEntry) bs.first();
+            Var v = (Var) e.key();
+
+        if(v.sym!=null && v.sym.name.equals("hell-yeah!")){
+            System.out.println();
+        }
+            if(!v.dynamic)
+                   throw new IllegalStateException(String.format("Can't dynamically bind non-dynamic var: %s/%s", v.ns, v.sym));
+            v.validate(v.getValidator(), e.val());
+            v.threadBound.set(true);
+            bmap = bmap.assoc(v, new TBox(Thread.currentThread(), e.val()));
+            }
+      dvals.set(new Frame(bmap, f));
+    }
 
 !SLIDE bullets incremental transition=fade
 # Agents intro
 
-* points
+* Single value store
+* Manipulated via messages (Actor like)
+* Mutation: send, send-of
+
 
 !SLIDE code execute
 .notes an example on how await works
