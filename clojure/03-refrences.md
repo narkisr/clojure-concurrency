@@ -2,9 +2,9 @@
 # Clojure reference types
 
 * Vars: global per thread value 
+* Agents: asynchronous single object store 
 * Atoms: simple CAS semantics
 * Refs: STM managed references 
-* Agents: asynchronous single object store
 
 !SLIDE center
 # Reference categorization 
@@ -14,8 +14,13 @@
 | Coordinated |              |     Ref      |
 | Independent |   Agent      |    Atom      |
 
+!SLIDE bullets incremental transition=fade
+# Vars intro
+
+* points
+
 !SLIDE code execute
-# Vars
+# Vars example
 
     @@@ clojure
     (def v 1)
@@ -33,9 +38,22 @@
       (.join thread)
       (println "p2:" v)) 
 
+!SLIDE bullets incremental transition=fade
+# Vars usage 
+
+* Per thread storage is required
+* Clojure has build in Vars (*out*)
+* def and defn
+
+
+!SLIDE bullets incremental transition=fade
+# Agents intro
+
+* points
 
 !SLIDE code execute
-# Agents
+.notes an example on how await works
+# Agents example
 
     @@@ clojure
     (def a (agent 5)) 
@@ -48,3 +66,26 @@
     (await a)
     
     (println "p2:" @a)
+
+!SLIDE bullets incremental transition=fade
+# Agents Usage
+ 
+* Accessing single threaded components
+* Side effects in STM transactions
+* Queue processing 
+
+!SLIDE bullets incremental transition=fade
+# Atoms intro
+
+* points
+
+!SLIDE code execute
+# Atoms 
+
+    @@@ clojure
+    code
+
+!SLIDE bullets incremental transition=fade
+# Atoms usage
+
+* points
