@@ -32,27 +32,22 @@
 
 # Nth 
 .notes an explanation on the binary bits should come first
-    @@@ java
 
-      public Object nth(int i){
+    @@@ java
+    public Object nth(int i){
             ensureEditable();// transient access
             Object[] node = arrayFor(i);
             return node[i & 0x01f];
-      } 
+    } 
 
-      private Object[] arrayFor(int i){
-            if(i >= 0 && i < cnt) {
-              if(i >= tailoff())
-                 return tail;
-              Node node = root;
-              for(int level = shift; level > 0; level -= 5)
-                node = (Node) node.array[(i >>> level) & 0x01f];
-                return node.array;
-              }
-            throw new IndexOutOfBoundsException();
-      } 
-
-!SLIDE code small
-
-    @@@ clojure
-     code
+    private Object[] arrayFor(int i){
+          if(i >= 0 && i < cnt) {
+             if(i >= tailoff())
+                return tail;
+             Node node = root;
+             for(int level = shift; level > 0; level -= 5)
+               node = (Node) node.array[(i >>> level) & 0x01f];
+               return node.array;
+             }
+           throw new IndexOutOfBoundsException();
+     } 
