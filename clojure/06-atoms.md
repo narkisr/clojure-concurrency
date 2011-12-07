@@ -66,3 +66,62 @@
 
 * Global state without coordination (memoization)
 * Reducing STM overhead
+
+!SLIDE code 
+# deref state and ctor
+
+    @@@ java
+    final public class Atom extends ARef{
+    final AtomicReference state;
+
+    public Atom(Object state){
+      this.state = new AtomicReference(state);
+    }
+
+    public Atom(Object state, IPersistentMap meta){
+      super(meta);
+      this.state = new AtomicReference(state);
+    }
+
+    public Object deref(){
+	return state.get();
+    } 
+  
+    
+!SLIDE code 
+# reset!  compare-and-set
+
+    @@@ java
+     public Object reset(Object newval){
+       Object oldval = state.get();
+       validate(newval);
+       state.set(newval);
+       notifyWatches(oldval, newval);
+       return newval;
+    }  
+    
+    public boolean compareAndSet(Object oldv, Object newv){
+      validate(newv);
+      boolean ret = state.compareAndSet(oldv, newv);
+      if(ret)
+          notifyWatches(oldv, newv);
+      return ret;
+    } 
+
+!SLIDE code 
+# swap! 
+
+    @@@ java
+    public Object swap(IFn f, Object x, Object y, ISeq args) {
+      for(; ;)
+          {
+            Object v = deref();
+            Object newv = f.applyTo(RT.listStar(v, x, y, args));
+            validate(newv);
+            if(state.compareAndSet(v, newv))
+                  {
+                  notifyWatches(v, newv);
+                  return newv;
+                  }
+          }
+    }  

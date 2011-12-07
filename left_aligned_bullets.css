@@ -1,5 +1,5 @@
 
-/* bullets */
+/* >> bullets */
 div.bullets li {
   text-align: left;
 }
@@ -8,6 +8,7 @@ div.bullets > ul > li:before {
   content: "\00BB \0020";
 }
 
+/*Table layout under content*/
 div.content > table,tr,td {
     border-right: 2px solid #8b8;
     border-bottom: 2px solid #8b8;
@@ -25,4 +26,9 @@ div.content > tr,td {
     padding-left: 20px;
     padding-top: 20px;
     padding-bottom: 20px;
+}
+
+/*non mono space titles in code*/
+div.code > h1 {
+  font-family:"Gill Sans",Helvetica,Arial,sans 
 }
