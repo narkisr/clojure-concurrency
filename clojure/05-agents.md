@@ -65,7 +65,7 @@
 !SLIDE code small 
 .notes dispatchAction gets the current transaction, if it exists it sets the action on it
        The Agent's queue implementation is based on Treiber's algorithm (see http://tinyurl.com/37mydc).
-# dispatch implementation cont .. 
+# dispatch/push implementation cont .. 
 
     @@@ java
      static void dispatchAction(Action action){
@@ -132,7 +132,3 @@
             finally
             // ...	
        }
-
-
-
-
