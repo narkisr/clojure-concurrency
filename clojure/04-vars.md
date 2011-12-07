@@ -1,5 +1,5 @@
 !SLIDE bullets incremental transition=fade
-# Vars intro
+# Vars 
 
 * Per thread global store
 * defn and def use var
@@ -7,7 +7,7 @@
 * Mutation: set!, def, defn
 
 !SLIDE code execute
-# Vars example
+# set! and binding
 
     @@@ clojure
     (def v 1)
@@ -26,7 +26,7 @@
       (println "p2:" v)) 
 
 !SLIDE bullets incremental transition=fade
-# Vars usage 
+# Usage 
 
 * Per thread storage is required
 * Configuration (like \*out\*)
