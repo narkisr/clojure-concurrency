@@ -6,6 +6,7 @@
 * Atoms: simple CAS semantics
 * Refs: STM managed references 
 * All implements ARef (some IFn)
+* Muatated by applying fn 
 
 !SLIDE center
 # Reference categorization 
