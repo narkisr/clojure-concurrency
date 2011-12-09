@@ -12,6 +12,7 @@
 
 !SLIDE center
 
+<embed id="embed"  type="image/svg+xml" src="image/clojure/collision.svg"/>
 
-<embed id="embed"  type="image/svg+xml" src="image/clojure/collision.svg">
+
 
