@@ -1,0 +1,633 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Clojure concurrency introduction</title>
+
+  <meta name="viewport" content="width=device-width"/>
+
+  <link rel="stylesheet" href="./css/reset.css" type="text/css"/>
+  <link rel="stylesheet" href="./css/showoff.css" type="text/css"/>
+
+  <script type="text/javascript" src="./js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="./js/jquery.cycle.all.js"></script>
+	<script type="text/javascript" src="./js/jquery-print.js"></script>
+  <script type="text/javascript" src="./js/jquery.batchImageLoad.js"></script>
+
+  <script type="text/javascript" src="./js/jquery.doubletap-0.1.js"></script>
+
+  <script type="text/javascript" src="./js/fg.menu.js"></script>
+  <script type="text/javascript" src="./js/showoff.js"></script>
+  <script type="text/javascript" src="./js/jTypeWriter.js"> </script>
+  <script type="text/javascript" src="./js/sh_main.min.js"></script>
+  <script type="text/javascript" src="./js/core.js"></script>
+  <script type="text/javascript" src="./js/showoffcore.js"></script>
+  <script type="text/javascript" src="./js/coffee-script.js"></script>
+
+  <link type="text/css" href="./css/fg.menu.css" media="screen" rel="stylesheet" />
+  <link type="text/css" href="./css/theme/ui.all.css" media="screen" rel="stylesheet" />
+  <link type="text/css" href="./css/sh_style.css" rel="stylesheet" >
+
+  
+    <link rel="stylesheet" href="./file/left_aligned_bullets.css" type="text/css"/>
+  
+
+  
+
+  <script type="text/javascript">
+  $(function(){
+      setupPreso(false, './');
+  });
+  </script>
+
+</head>
+
+<body>
+
+<a tabindex="0" href="#search-engines" class="fg-button fg-button-icon-right ui-widget ui-state-default ui-corner-all" id="navmenu"><span class="ui-icon ui-icon-triangle-1-s"></span>slides</a>
+<div id="navigation" class="hidden"></div>
+
+<div id="help">
+  <table>
+    <tr><td class="key">z, ?</td><td>toggle help (this)</td></tr>
+    <tr><td class="key">space, &rarr;</td><td>next slide</td></tr>
+    <tr><td class="key">shift-space, &larr;</td><td>previous slide</td></tr>
+    <tr><td class="key">d</td><td>toggle debug mode</td></tr>
+    <tr><td class="key">## &lt;ret&gt;</td><td>go to slide #</td></tr>
+    <tr><td class="key">c, t</td><td>table of contents (vi)</td></tr>
+    <tr><td class="key">f</td><td>toggle footer</td></tr>
+    <tr><td class="key">r</td><td>reload slides</td></tr>
+    <tr><td class="key">n</td><td>toggle notes</td></tr>
+    <tr><td class="key">p</td><td>run preshow</td></tr>
+  </table>
+</div>
+
+<div class="buttonNav">
+  <input type="submit" onClick="prevStep();" value="prev"/>
+  <input type="submit" onClick="nextStep();" value="next"/>
+</div>
+
+<div id="preso">loading presentation...</div>
+<div id="footer">
+  <span id="slideInfo"></span>
+  <span id="debugInfo"></span>
+  <span id="notesInfo"></span>
+</div>
+
+<div id="slides" class="offscreen" style="display:none;">
+<div class="slide" data-transition="none"><div class="content" ref="agenda/01_intro/1">
+<h1>Clojure concurrency</h1>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="agenda/01_intro/2">
+<h1>Agenda</h1>
+
+<ul>
+<li>Concurrency and why it matters </li>
+<li>Current approaches (and why they fail)</li>
+<li>Clojure concurrency take</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="agenda/01_intro/3">
+<p class="notes">Setting up some context</p>
+
+<h1>Concurrency and why is matters?</h1>
+
+<ul>
+<li>The end of free lunch</li>
+<li>Concurrency != Parallelism</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="agenda/01_intro/4">
+<h1>Common issues</h1>
+
+<ul>
+<li>Deadlocks</li>
+<li>Livelocks </li>
+<li>Race conditions</li>
+<li>Starvation </li>
+</ul>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="agenda/02_approch/1">
+<h1>Common techniques</h1>
+
+<ul>
+<li>Locks</li>
+<li>Actors</li>
+<li>Dataflow</li>
+<li>STM</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="agenda/02_approch/2">
+<h1>Locks</h1>
+
+<ul>
+<li>Prevalent in most languages today</li>
+<li>Manual low level mechanism </li>
+<li>Very error prone</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="agenda/02_approch/3">
+<pre class="sh_clojure"><code>(def o (Object.))
+(defn sleep-lock [interval] 
+  (future 
+    (locking o 
+     (do 
+      (Thread/sleep interval) 
+      (str (java.util.Date.))
+    ))))
+
+(def f1 (sleep-lock 3000))
+(def f2 (sleep-lock 1000))
+(println (str "longer " @f1))
+(println (str "shorter " @f2))</code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="agenda/02_approch/4">
+<h1>Lock pitfalls</h1>
+
+<ul>
+<li>Taking too few locks<br/>
+<li>Taking the wrong locks </li>
+<li>Taking locks in the wrong order</li>
+<li>Error recovery</li>
+<li>Lost wake-ups and erroneous retries</li>
+</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content subsection" ref="clojure/01_intro/1">
+<h1>Clojure</h1>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/01_intro/2">
+<p class="notes">the basic clojure philosophy</p>
+
+<h1>Identity state and value</h1>
+
+<ul>
+<li>Value: an immutable magnitude, quantity, number, or composite of these</li>
+<li>Identity: a putative entity we associate with a series of causally related values (states) over time</li>
+<li>State: value of an identity at a moment in time</li>
+<li>Time: relative before/after ordering of causal values.</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content subsection" ref="clojure/02_adts/1">
+<h1>Implementation</h1>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/02_adts/2">
+<h1>Persistent data structures</h1>
+
+<ul>
+<li>Implemented as 32 bit partitioned trees</li>
+<li>Immutable</li>
+<li>Data sharing </li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code style execute" ref="clojure/02_adts/3">
+<h1>Immutability</h1>
+
+<pre class="sh_clojure"><code>(def a [1 2 3])
+
+(conj a 4)
+
+(println a)</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content full-page-image" ref="clojure/02_adts/4">
+<p><img src="./file/clojure/persistentvector.png" width="581" height="235" alt="Persistent vector" title="persistent-vector">
+</img>
+</p>
+</div>
+</div><div class="slide" data-transition="none"><div class="content full-page-image" ref="clojure/02_adts/5">
+<p><img src="./file/clojure/bin-map.png" width="456" height="171" alt="Persistent vector" title="binary partitoining">
+</img>
+</p>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/02_adts/6">
+<h1>Nth</h1>
+
+<p class="notes">an explanation on the binary bits should come first</p>
+
+<pre class="sh_java"><code>public Object nth(int i){
+        ensureEditable();// transient access
+        Object[] node = arrayFor(i);
+        return node[i &amp; 0x01f];
+} 
+
+private Object[] arrayFor(int i){
+      if(i &gt;= 0 &amp;&amp; i &lt; cnt) {
+         if(i &gt;= tailoff())
+            return tail;
+         Node node = root;
+         for(int level = shift; level &gt; 0; level -= 5)
+           node = (Node) node.array[(i &gt;&gt;&gt; level) &amp; 0x01f];
+           return node.array;
+         }
+       throw new IndexOutOfBoundsException();
+ } </code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/03-refs-intro/1">
+<h1>Clojure reference types</h1>
+
+<ul>
+<li>Vars: global per thread value </li>
+<li>Agents: asynchronous single object store </li>
+<li>Atoms: simple CAS semantics</li>
+<li>Refs: STM managed references </li>
+<li>All implements ARef (some IFn)</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content center" ref="clojure/03-refs-intro/2">
+<h1>Reference categorization</h1>
+
+<table><thead>
+<tr>
+<td align="left"/>
+<td align="center">Asynchronous</td>
+<td align="center">Synchronous</td>
+</tr>
+</thead><tbody>
+<tr>
+<td align="left">Coordinated</td>
+<td align="center"/>
+<td align="center">Ref</td>
+</tr>
+<tr>
+<td align="left">Independent</td>
+<td align="center">Agent</td>
+<td align="center">Atom</td>
+</tr>
+</tbody></table></div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/04-vars/1">
+<h1>Vars</h1>
+
+<ul>
+<li>Per thread global store</li>
+<li>defn and def use var</li>
+<li>Dynamic bindings </li>
+<li>Mutation: set!, def, defn</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/04-vars/2">
+<h1>set! and binding</h1>
+
+<pre class="sh_clojure"><code>(def v 1)
+
+(alter-var-root #'*out* (constantly *out*))
+
+(defn set-5 [o] 
+  (binding [v o] ; v bound to TL
+    (set! v 5)
+    (println "p1:" v))
+  )
+
+(let [thread (Thread. #(set-5 v))]
+  (.start thread)
+  (.join thread)
+  (println "p2:" v)) </code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/04-vars/3">
+<h1>Usage</h1>
+
+<ul>
+<li>Per thread storage is required</li>
+<li>Configuration (like *out*)</li>
+<li>AOP in functions</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code" ref="clojure/04-vars/4">
+<h1>Implementation ctor</h1>
+
+<pre class="sh_java"><code>Var(Namespace ns, Symbol sym, Object root){
+  this(ns, sym);
+  this.root = root;
+  ++rev;
+}</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/04-vars/5">
+<p class="notes">
+ 2. dvals holds current Frame which holds bindings and previous Frame, 
+ 3. pushThreadBindings invoked by bindings, stores a new Frame into dvals,
+ 4. A symmetric popThreadBindings pulls previous Frame.</p>
+
+<h1>Framing implementation</h1>
+
+<pre class="sh_java"><code>
+public final class Var extends ARef implements IFn, IRef, Settable{
+
+  // ... 
+
+  static final ThreadLocal&lt;Frame&gt; dvals = new ThreadLocal&lt;Frame&gt;(){
+    // ...
+  };
+
+  // ... 
+
+  public static void pushThreadBindings(Associative bindings){
+    Frame f = dvals.get();
+    Associative bmap = f.bindings;
+    for(ISeq bs = bindings.seq(); bs != null; bs = bs.next())
+          {
+          IMapEntry e = (IMapEntry) bs.first();
+          Var v = (Var) e.key();
+
+           if(!v.dynamic)
+                 throw new IllegalStateException(String.format("Can't dynamically bind non-dynamic var: %s/%s", v.ns, v.sym));
+
+          v.validate(v.getValidator(), e.val());
+          v.threadBound.set(true);
+          bmap = bmap.assoc(v, new TBox(Thread.currentThread(), e.val()));
+          }
+    dvals.set(new Frame(bmap, f));
+  }
+
+  // ...
+}</code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/05-agents/1">
+<h1>Agents intro</h1>
+
+<ul>
+<li>Single value store</li>
+<li>Manipulated via messages (Actor like)</li>
+<li>Mutation: send, send-of</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/05-agents/2">
+<p class="notes">an example on how await works</p>
+
+<h1>Agents example</h1>
+
+<pre class="sh_clojure"><code>(def a (agent 5)) 
+
+(dotimes [i 5] 
+  (send a #(do (Thread/sleep 100) (inc %))))
+
+(println "p1:" @a)
+
+(await a)
+
+(println "p2:" @a)</code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/05-agents/3">
+<h1>Agents Usage</h1>
+
+<ul>
+<li>Accessing single threaded components</li>
+<li>Side effects in STM transactions</li>
+<li>Queue processing </li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/05-agents/4">
+<h1>send implementation</h1>
+
+<pre class="sh_clojure"><code>(defn send
+ "Dispatch an action to an agent. Returns the agent immediately.
+  Subsequently, in a thread from a thread pool, the state of the agent
+  will be set to the value of:
+
+ (apply action-fn state-of-agent args)"
+ {:added "1.0"
+  :static true}
+  [^clojure.lang.Agent a f &amp; args]
+  (.dispatch a (binding [*agent* a] (binding-conveyor-fn f)) args false)) </code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/05-agents/5">
+<p class="notes">dispatch creates a new actions and dispatches it
+       the quq</p>
+
+<h1>dispatch implementation</h1>
+
+<pre class="sh_java"><code>public class Agent extends ARef { // ...
+
+  AtomicReference&lt;ActionQueue&gt; aq = new AtomicReference&lt;ActionQueue&gt;(ActionQueue.EMPTY);
+
+  public Object dispatch(IFn fn, ISeq args, boolean solo) {
+    // ... 
+    Action action = new Action(this, fn, args, solo);
+    dispatchAction(action);
+
+    return this;
+  } // ...  </code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/05-agents/6">
+<p class="notes">dispatchAction gets the current transaction, if it exists it sets the action on it
+       The Agent's queue implementation is based on Treiber's algorithm (see http://tinyurl.com/37mydc).</p>
+
+<h1>dispatch/push implementation cont ..</h1>
+
+<pre class="sh_java"><code> static void dispatchAction(Action action){
+   LockingTransaction trans = LockingTransaction.getRunning();
+   if(trans != null)
+        trans.enqueue(action);
+   else if(nested.get() != null)// not sure what nested is
+         {
+         nested.set(nested.get().cons(action));
+         }
+  else
+     action.agent.enqueue(action);
+ } // ... 
+
+ void enqueue(Action action){ // push
+   boolean queued = false;
+   ActionQueue prior = null;
+   while(!queued)// if we didn't manage to CAS 
+         {
+         prior = aq.get();
+         queued = aq.compareAndSet(prior, new ActionQueue((IPersistentStack)prior.q.cons(action), prior.error));
+         }
+
+   if(prior.q.count() == 0 &amp;&amp; prior.error == null) // only first action 
+         action.execute();
+ } // ... 
+} // closing class</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="clojure/05-agents/7">
+<h1>pop implementation</h1>
+
+<pre class="sh_java"><code> static void doRun(Action action){// invoked from run in a Thread 
+        try
+              {
+              nested.set(PersistentVector.EMPTY);
+
+              Throwable error = null;
+              try
+                    {
+                    Object oldval = action.agent.state;
+                    Object newval =  action.fn.applyTo(RT.cons(action.agent.state, action.args));
+                    action.agent.setState(newval);
+                    action.agent.notifyWatches(oldval,newval);
+                    }
+             catch(Throwable e)
+                    {
+                    error = e;
+                    }
+              // ... 
+              boolean popped = false;
+              ActionQueue next = null;
+              while(!popped)
+                    {
+                    ActionQueue prior = action.agent.aq.get();
+                    next = new ActionQueue(prior.q.pop(), error);
+                    popped = action.agent.aq.compareAndSet(prior, next);
+                    }
+
+              if(error == null &amp;&amp; next.q.count() &gt; 0) // pulling more actions
+                   ((Action) next.q.peek()).execute();
+              }
+        finally
+        // ...  
+   }</code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/06-atoms/1">
+<h1>Atoms</h1>
+
+<ul>
+<li>Synchronous non transactional storage</li>
+<li>Has CAS semantics</li>
+<li>Mutation: reset!, compare-and-set! and swap!</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/06-atoms/2">
+<p class="notes">replaces the current value without taking older value into account</p>
+
+<h1>reset!</h1>
+
+<pre class="sh_clojure"><code>(def x (atom 1))
+(reset! x 2)
+(println @x)</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/06-atoms/3">
+<p class="notes">CAS semantics</p>
+
+<h1>compare-and-set!</h1>
+
+<pre class="sh_clojure"><code>(def x (atom 1))
+
+(alter-var-root #'*out* (constantly *out*))
+
+(defn update-atom []
+  (let [curr-val @x]
+  (println "update-atom: curr-val =" curr-val) ; -&gt; 1
+  (Thread/sleep 50) ; give reset! time to run
+  (println
+    (compare-and-set! x curr-val (inc curr-val))))) ; -&gt; false
+
+(let [thread (Thread. #(update-atom))]
+  (.start thread)
+(Thread/sleep 25) ; give thread time to call update-atom
+  (reset! x 3) ; happens after update-atom binds curr-val
+  (.join thread)) ; wait for thread to finish
+
+  (println @x) ; -&gt; 3</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/06-atoms/4">
+<p class="notes">swap! repeatedly replay the function until not collision is made</p>
+
+<h1>swap!</h1>
+
+<pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
+
+(def x (atom 1))
+
+
+(defn update-atom [curr-val]
+  (println "update-atom: curr-val =" curr-val)
+  (Thread/sleep 50) ; give reset! time to run
+  (inc curr-val))
+
+(let [thread (Thread. #(swap! x update-atom))]
+  (.start thread)
+  (Thread/sleep 25) ; give swap! time to call update-atom
+  (reset! x 3)
+  (.join thread)) ; wait for thread to finish
+
+(println @x) ; -&gt; 4</code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/06-atoms/5">
+<h1>Usage</h1>
+
+<ul>
+<li>Global state without coordination (memoization)</li>
+<li>Reducing STM overhead</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code" ref="clojure/06-atoms/6">
+<h1>deref state and ctor</h1>
+
+<pre class="sh_java"><code>final public class Atom extends ARef{
+final AtomicReference state;
+
+public Atom(Object state){
+  this.state = new AtomicReference(state);
+}
+
+public Atom(Object state, IPersistentMap meta){
+  super(meta);
+  this.state = new AtomicReference(state);
+}
+
+public Object deref(){
+return state.get();
+} </code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code" ref="clojure/06-atoms/7">
+<h1>reset!  compare-and-set</h1>
+
+<pre class="sh_java"><code> public Object reset(Object newval){
+   Object oldval = state.get();
+   validate(newval);
+   state.set(newval);
+   notifyWatches(oldval, newval);
+   return newval;
+}  
+
+public boolean compareAndSet(Object oldv, Object newv){
+  validate(newv);
+  boolean ret = state.compareAndSet(oldv, newv);
+  if(ret)
+      notifyWatches(oldv, newv);
+  return ret;
+} </code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code" ref="clojure/06-atoms/8">
+<h1>swap!</h1>
+
+<pre class="sh_java"><code>public Object swap(IFn f, Object x, Object y, ISeq args) {
+  for(; ;)
+      {
+        Object v = deref();
+        Object newv = f.applyTo(RT.listStar(v, x, y, args));
+        validate(newv);
+        if(state.compareAndSet(v, newv))
+              {
+              notifyWatches(v, newv);
+              return newv;
+              }
+      }
+}  </code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/refs/1">
+<h1>Refs</h1>
+
+<ul>
+<li>Coordinate storage using STM</li>
+<li>Mutation: reset!, swap!, ref-set, alter, commute </li>
+</ul>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/refs/2">
+<h1>Transactions</h1>
+
+<ul>
+<li>Defines a unit of work</li>
+<li>Commit if successful </li>
+<li>Retry if conflict</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code style" ref="clojure/refs/3">
+<p><img src="./file/clojure/transaction.svg" alt="Persistent vector" title="transaction">
+</img>
+</p>
+</div>
+</div></div>
+
+</body>
+</html>
