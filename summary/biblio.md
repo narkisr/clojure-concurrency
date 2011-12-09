@@ -9,4 +9,5 @@
 !SLIDE bullets incremental transition=fade
 Persistent trees
 
-* [Persistent vector implementation](http://blog.higher-order.net/2009/09/08/understanding-clojures-persistenthashmap-deftwice/)
+* [Persistent map implementation](http://blog.higher-order.net/2009/09/08/understanding-clojures-persistenthashmap-deftwice/)
+* [Persistent vector implementation](http://blog.higher-order.net/2009/02/01/understanding-clojures-persistentvector-implementation/)
