@@ -5,12 +5,13 @@
 * Mutation: reset!, swap!, ref-set, alter, commute 
 
 !SLIDE bullets incremental transition=fade
+.notes  Defines a unit of work, commit if successful, retry if conflict (up to RETRY_LIMIT currently 10,000)
 # Transactions 
 
-* Defines a unit of work
-* Commit if successful 
-* Retry if conflict
-
-!SLIDE code style
-
 ![Persistent vector](transaction.svg "transaction")
+
+!SLIDE center
+
+
+<embed id="embed"  type="image/svg+xml" src="image/clojure/collision.svg">
+

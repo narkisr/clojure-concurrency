@@ -32,3 +32,15 @@ div.content > tr,td {
 div.code > h1 {
   font-family:"Gill Sans",Helvetica,Arial,sans 
 }
+
+div.content > svg {
+    border-right: 2px solid #8b8;
+    border-bottom: 2px solid #8b8;
+    font-weight: bold;
+    margin-top:1.2em;
+    margin-left:auto;
+    margin-right:auto;
+    white-space: pre;
+    font-size: 1.5em;
+
+}
