@@ -5,14 +5,17 @@
 * Mutation: ref-set, alter, commute 
 
 !SLIDE bullets incremental transition=fade
-.notes  Defines a unit of work, commit if successful, retry if conflict (up to RETRY_LIMIT currently 10,000)
+.notes "Atomic" commit or retry, "Consistent" constraints on the data will not be violated, "Isolated" changes made inside a transaction are not visible outside the transaction until it commits
 # Transactions 
-
-![Persistent vector](transaction.svg "transaction")
+* A unit of work
+* ACI(D)
+* Should be side effect free (retries)
 
 !SLIDE center
+.notes commit if successful, retry if conflict (up to RETRY_LIMIT currently 10,000), this is a simplification of the real life cycle which has 5 states
+# Life cycle
 
-<embed id="embed"  type="image/svg+xml" src="image/clojure/collision.svg"/>
+![Persistent vector](transaction.svg "transaction")
 
 !SLIDE code execute
 # alter
