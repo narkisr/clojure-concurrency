@@ -15,7 +15,7 @@
 .notes commit if successful, retry if conflict (up to RETRY_LIMIT currently 10,000), this is a simplification of the real life cycle which has 5 states
 # Life cycle
 
-![Persistent vector](transaction.svg "transaction")
+![Transaction](transaction.svg "transaction")
 
 !SLIDE code execute
 # alter
