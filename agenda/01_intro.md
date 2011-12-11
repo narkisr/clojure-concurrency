@@ -1,7 +1,7 @@
 !SLIDE 
 # Clojure concurrency #
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets 
 # Agenda
 
 * Concurrency and why it matters 
@@ -9,15 +9,15 @@
 * Clojure concurrency take
 
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets 
 .notes Setting up some context
 # Concurrency and why is matters?
 
 * The end of free lunch
 * Concurrency != Parallelism
 
-!SLIDE bullets incremental transition=fade
-
+!SLIDE bullets 
+.notes livelock occurs when concurrently running threads are performing work (as opposed to be being blocked, waiting on resources), but cannot complete due to something that other threads have done or not done.  
 # Common issues
 
 * Deadlocks
