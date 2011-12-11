@@ -42,6 +42,7 @@
      }
 
 !SLIDE code smaller
+.notes The symetric set value method
 
     @@@ java
     Object doSet(Ref ref, Object val){
