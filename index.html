@@ -233,6 +233,7 @@ private Object[] arrayFor(int i){
 <li>Atoms: simple CAS semantics</li>
 <li>Refs: STM managed references </li>
 <li>All implements ARef (some IFn)</li>
+<li>Muatated by applying fn </li>
 </ul>
 </div>
 </div><div class="slide" data-transition="none"><div class="content center" ref="clojure/03-refs-intro/2">
@@ -605,27 +606,396 @@ public boolean compareAndSet(Object oldv, Object newv){
       }
 }  </code></pre>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/refs/1">
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/08-refs/1">
 <h1>Refs</h1>
 
 <ul>
-<li>Coordinate storage using STM</li>
-<li>Mutation: reset!, swap!, ref-set, alter, commute </li>
+<li>Coordinated storage using STM</li>
+<li>Mutation: ref-set, alter, commute </li>
 </ul>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/refs/2">
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/08-refs/2">
+<p class="notes">"Atomic" commit or retry, "Consistent" constraints on the data will not be violated, "Isolated" changes made inside a transaction are not visible outside the transaction until it commits</p>
+
 <h1>Transactions</h1>
 
 <ul>
-<li>Defines a unit of work</li>
-<li>Commit if successful </li>
-<li>Retry if conflict</li>
+<li>A unit of work</li>
+<li>ACI(D)</li>
+<li>Should be side effect free (retries)</li>
 </ul>
 </div>
-</div><div class="slide" data-transition="none"><div class="content code style" ref="clojure/refs/3">
-<p><img src="./file/clojure/transaction.svg" alt="Persistent vector" title="transaction">
+</div><div class="slide" data-transition="none"><div class="content center" ref="clojure/08-refs/3">
+<p class="notes">commit if successful, retry if conflict (up to RETRY_LIMIT currently 10,000), this is a simplification of the real life cycle which has 5 states</p>
+
+<h1>Life cycle</h1>
+
+<p><img src="./file/clojure/transaction.svg" alt="Transaction" title="transaction">
 </img>
 </p>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/08-refs/4">
+<h1>alter</h1>
+
+<pre class="sh_clojure"><code>(def account (ref 0))
+
+(defn deposit [amount]
+  (alter account #(+ amount %)))
+
+(def f (future (dosync (deposit 5))))
+
+(do 
+  (deref f)
+  (println @account))</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/08-refs/5">
+<p class="notes">ref-set usage is frowned upon alter is preferable</p>
+
+<h1>ref-set</h1>
+
+<pre class="sh_clojure"><code>(def account (ref 0))
+
+(def f 
+  (future 
+    (dosync 
+     (ref-set account (+ 5 @account)))))
+
+(do 
+  (deref f)
+  (println @account))</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute small" ref="clojure/08-refs/6">
+<h1>retry and commute</h1>
+
+<pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
+
+(def account (ref 0))
+
+(defn deposit [amount] (alter account + amount ))
+
+(def f1 (future 
+      (dosync
+         (deposit -2)
+         (Thread/sleep 500)
+         (println (str "T1 running") @account)
+         (deposit 5))))
+
+(def f2 (future 
+      (dosync
+         (println (str "T2 running") @account)
+         (deposit 5))))
+
+(do 
+  (deref f1)
+  (deref f2)
+  (println @account))</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute small" ref="clojure/08-refs/7">
+<h1>commute</h1>
+
+<pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
+
+(def account (ref 0))
+
+(defn deposit [amount] (commute account + amount %))
+
+(def f1 (future 
+      (dosync
+         (deposit -2)
+         (Thread/sleep 500)
+         (println (str "T1 running") @account)
+         (deposit 5))))
+
+(def f2 (future 
+      (dosync
+         (println (str "T2 running") @account)
+         (deposit 5))))
+
+(do 
+  (deref f1)
+  (deref f2)
+  (println @account))</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute smaller" ref="clojure/08-refs/8">
+<h1>write skew</h1>
+
+<pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
+
+(def account1 (ref 100))
+(def account2 (ref 100))
+
+
+(defn deposit  [account amount]
+  (dosync
+    (if (&gt; (+ @account2  @account1) 0)
+      (alter account + amount))))
+
+
+(let [deposits1 (repeat 10 #(deposit account1 -200)) 
+      deposits2 (repeat 10 #(deposit account2 -200))]
+  (dorun (apply pcalls (interleave deposits1 deposits2)))
+  (println @account1)
+  (println @account2))</code></pre>
+
+<p>http://paste.lisp.org/display/87117#1</p>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute smaller" ref="clojure/08-refs/9">
+<h1>ensure</h1>
+
+<pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
+
+(def account1 (ref 100))
+(def account2 (ref 100))
+
+
+(defn deposit  [account amount]
+  (dosync
+    (ensure account1)
+    (ensure account2)
+    (if (&gt; (+ @account2  @account1) 0)
+      (alter account + amount))))
+
+
+(let [deposits1 (repeat 10 #(deposit account1 -200)) 
+      deposits2 (repeat 10 #(deposit account2 -200))]
+  (dorun (apply pcalls (interleave deposits1 deposits2)))
+  (println @account1)
+  (println @account2))</code></pre>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="stm/01-intro">
+<h1>Clojure STM</h1>
+
+<ul>
+<li>Implementation based upon MVCC </li>
+<li>Transaction operate under snpashot isolation</li>
+<li>Optimistic, assumes low chances of write collisions</li>
+<li>No deadlocks, livelocks or race conditions possible</li>
+<li>Implemention core: Ref and LockingTransaction </li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content subsection" ref="stm/02-locking-transaction/1">
+<h1>LockingTransaction</h1>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="stm/02-locking-transaction/2">
+<p class="notes">The LockingTransaction is held in thread local storage, the info class holds the transaction status, most status are self explanatory KILLED is set when one TX barges another
+info is also a part of lock-free strategy to mark Refs as having an uncommitted change</p>
+
+<pre class="sh_java"><code>public class LockingTransaction{ 
+
+  final static ThreadLocal&lt;LockingTransaction&gt; transaction =
+                             new ThreadLocal&lt;LockingTransaction&gt;(); 
+
+  static final int RUNNING = 0; // executing code
+  static final int COMMITTING = 1; // committing changes to refs
+  static final int RETRY = 2; // will be retied
+  static final int KILLED = 3; // barged 
+  static final int COMMITTED = 4; // done committing
+
+  public static class Info{
+    final AtomicInteger status;
+    final long startPoint;
+    final CountDownLatch latch;
+
+
+    public Info(int status, long startPoint){
+          this.status = new AtomicInteger(status);
+          this.startPoint = startPoint;
+          this.latch = new CountDownLatch(1);
+    }
+
+    public boolean running(){
+          int s = status.get();
+          return s == RUNNING || s == COMMITTING;
+    }
+  }</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code small" ref="stm/02-locking-transaction/3">
+<p class="notes">runInTransaction is called from the dosync macro, it gets the thread local LockingTransaction (if exists)</p>
+
+<pre class="sh_java"><code>static public Object runInTransaction(Callable fn) throws Exception{
+  LockingTransaction t = transaction.get();
+  if(t == null)
+        transaction.set(t = new LockingTransaction());
+
+  if(t.info != null)
+       return fn.call();
+
+  return t.run(fn);
+} </code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="stm/02-locking-transaction/4">
+<p class="notes">
+The run method is the core of the transaction lifecycle, in it the retry loop is running </p>
+
+<pre class="sh_java"><code>Object run(Callable fn) throws Exception{
+
+  ...
+
+  for(int i = 0; !done &amp;&amp; i &lt; RETRY_LIMIT; i++)
+       {
+       try
+           {
+           getReadPoint();// tracks order of retries across all transactions.
+           if(i == 0)
+                {
+                 startPoint = readPoint;
+                 startTime = System.nanoTime();
+                }
+           info = new Info(RUNNING, startPoint);
+           ret = fn.call();// calling the body of dosync
+           } 
+
+        ...
+
+       }
+}</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content subsection" ref="stm/03-snapshot-isolation/1">
+<p class="notes">vals include commuted values (unlike sets)</p>
+
+<h1>Snapshot isolation</h1>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code style small" ref="stm/03-snapshot-isolation/2">
+<pre class="sh_java"><code>// modified by current TX Refs -&gt; in-transaction values. 
+final HashMap&lt;Ref, Object&gt; vals = new HashMap&lt;Ref, Object&gt;();
+
+// Refs modified by current TX by using ref-set or alter 
+final HashSet&lt;Ref&gt; sets = new HashSet&lt;Ref&gt;(); </code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="stm/03-snapshot-isolation/3">
+<p class="notes">Here we see how ref value is obtained within the TX (alter calls it), if it doesn't have a TX value the value is looked for in the tvals</p>
+
+<h1>doget</h1>
+
+<pre class="sh_java"><code>Object doGet(Ref ref){
+  if(!info.running())
+        throw retryex;
+  if(vals.containsKey(ref))
+        return vals.get(ref);
+  try
+        {
+        ref.lock.readLock().lock();
+        if(ref.tvals == null)
+               throw new IllegalStateException(ref.toString() + " is unbound.");
+        Ref.TVal ver = ref.tvals;
+        do
+              {
+                if(ver.point &lt;= readPoint)  {
+                  return ver.val;
+                }
+              } while((ver = ver.prior) != ref.tvals);
+       }
+  finally
+        {
+        ref.lock.readLock().unlock();
+        }
+  //no version of val precedes the read point
+  ref.faults.incrementAndGet();
+  throw retryex;
+ }</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="stm/03-snapshot-isolation/4">
+<h1>doset</h1>
+
+<pre class="sh_java"><code>Object doSet(Ref ref, Object val){
+  if(!info.running())
+         throw retryex;
+  if(commutes.containsKey(ref))
+        throw new IllegalStateException("Can't set after commute");
+  if(!sets.contains(ref))
+        {
+        sets.add(ref);
+        lock(ref);
+        }
+  vals.put(ref, val);
+  return val;
+}</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content subsection" ref="stm/04-ref/1">
+<h1>Ref</h1>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code small" ref="stm/04-ref/2">
+<p class="notes">each Ref stores multiple versions of committed values in a circular list tvals</p>
+
+<h1>Ref</h1>
+
+<pre class="sh_java"><code>public class Ref extends ARef implements IFn, Comparable&lt;Ref&gt;, IRef{ 
+ ...
+
+ public static class TVal{
+   Object val;// the committed value
+   long point;// transaction commit id
+   long msecs;// TVal creation time
+   TVal prior;// older commits
+   TVal next;// newer commits
+ } 
+
+ TVal tvals;
+ ...
+}</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content center" ref="stm/04-ref/3">
+<p class="notes">Values are added if faults happend</p>
+
+<h1>Ref history list</h1>
+
+<p><img src="./file/stm/tvals-versions.svg" alt="Tvals version" title="tvals">
+</img>
+</p>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="stm/04-ref/4">
+<h1>Fault</h1>
+
+<ul>
+<li>A TX read a ref that has no local value</li>
+<li>All existing values were commited after TX has began</li>
+<li>This causes a retry and tvals grow</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="stm/04-ref/5">
+<p class="notes">Barging favors old transactions </p>
+
+<h1>Write conflict and Barging</h1>
+
+<ul>
+<li>TX A try modifying a Ref that B changed without committing</li>
+<li>A will try to Barge B</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code small" ref="stm/04-ref/6">
+<p class="notes">
+In order for A to barge B (else A will retry):
+1. A must have been running for at least 1/100th of a second (BARGE_WAIT_NANOS)
+2. A started before B (favors older txns)
+3. B has a status of RUNNING and can be changed to KILLED</p>
+
+<h1>Barge</h1>
+
+<pre class="sh_java"><code>private boolean barge(Info refinfo){
+  boolean barged = false;
+  // if this transaction is older
+  // try to abort the other
+  if(bargeTimeElapsed() &amp;&amp; startPoint &lt; refinfo.startPoint)
+        {
+    barged = refinfo.status.compareAndSet(RUNNING, KILLED);
+    if(barged)
+        refinfo.latch.countDown();
+        }
+  return barged;
+}  
+
+Object run(Callable fn) throws Exception{ 
+
+   // within the retry loop      
+  Info refinfo = ref.tinfo; 
+  if(refinfo != null &amp;&amp; refinfo != info &amp;&amp; refinfo.running())
+       {
+         if(!barge(refinfo))
+            throw retryex;
+       }  
+   ...
+
+}</code></pre>
 </div>
 </div></div>
 
