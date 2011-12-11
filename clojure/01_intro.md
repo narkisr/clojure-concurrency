@@ -2,7 +2,7 @@
 
 # Clojure
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets 
 .notes the basic clojure philosophy
 # Identity state and value 
 

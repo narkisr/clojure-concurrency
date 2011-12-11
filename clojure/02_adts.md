@@ -1,8 +1,4 @@
-!SLIDE subsection
-
-# Implementation 
-
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets 
 
 # Persistent data structures
 
