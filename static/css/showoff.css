@@ -90,6 +90,9 @@
 .content > p {
 	font-size: 2em;
     margin: 1em;
+    white-space: pre;
+    font-family: monospace;
+    font-size: 3em;
 	text-align: center;
 }
 
