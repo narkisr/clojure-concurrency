@@ -12,7 +12,6 @@
    
 !SLIDE code smaller
 .notes Here we see how ref value is obtained within the TX (alter calls it), if it doesn't have a TX value the value is looked for in the tvals
-# doget
 
     @@@ java
     Object doGet(Ref ref){
@@ -43,7 +42,6 @@
      }
 
 !SLIDE code smaller
-# doset 
 
     @@@ java
     Object doSet(Ref ref, Object val){
