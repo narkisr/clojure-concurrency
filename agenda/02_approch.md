@@ -15,17 +15,17 @@
 * Very error prone
 
 !SLIDE code execute
-.notes A basic lock example, notice that the shorter version  cannot complete until the longer one releases its lock
+.notes Yes locks in Clojure are possible, a but surprissing but the good java interop will enable Clojure in Clojure 
+A basic lock example, notice that the shorter version cannot complete until the longer one releases its lock
 
     @@@ clojure
     (def o (Object.))
     (defn sleep-lock [interval] 
       (future 
         (locking o 
-         (do 
-          (Thread/sleep interval) 
-          (str (java.util.Date.))
-        ))))
+          (do 
+            (Thread/sleep interval) 
+            (str (java.util.Date.))))))
 
     (def f1 (sleep-lock 1000))
     (def f2 (sleep-lock 500))
@@ -33,7 +33,7 @@
     (println (str "shorter " @f2))
     
 !SLIDE bullets
- 
+.notes In erroneous situation its very hard to recover and decide which lock to release take etc..
 # Lock pitfalls 
 
 * Taking too few locks  
