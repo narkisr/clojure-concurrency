@@ -54,13 +54,10 @@
 
     public final class Var extends ARef implements IFn, IRef, Settable{
 
-      // ... 
-
       static final ThreadLocal<Frame> dvals = new ThreadLocal<Frame>(){
-        // ...
+         ...
       };
       
-      // ... 
    
       public static void pushThreadBindings(Associative bindings){
         Frame f = dvals.get();
@@ -80,7 +77,7 @@
         dvals.set(new Frame(bmap, f));
       }
    
-      // ...
+       ...
     }
 
 
