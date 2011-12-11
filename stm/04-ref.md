@@ -2,7 +2,7 @@
 # Ref
 
 !SLIDE code small
-.notes each Ref stores multiple versions of committed values in a circular list tvals
+.notes Each Ref stores multiple versions of committed values in a circular list tvals
 # Ref
 
     @@@ java
@@ -28,18 +28,20 @@
 ![Tvals version](tvals-versions.svg "tvals")
 
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
+.notes Adding the faulted value into the tvals list reduces the likelihood for other TX's to have faults (assuming they started after the committing TX)
 # Fault
 
 * A TX read a ref that has no local value
-* All existing values were commited after TX has began
-* This causes a retry and tvals grow
+* All existing tvals were committed after TX has began
+* This causes a retry and increment the faults [counter](/#54)
+* First commit on faulty Ref will be added to tvals 
 
 !SLIDE bullets incremental transition=fade
-.notes Barging favors old transactions 
+.notes A knows that according to the tinfo field on the Ref
 # Write conflict and Barging
 
-* TX A try modifying a Ref that B changed without committing
+* TX A try modifying a Ref that TX B changed without committing
 * A will try to Barge B
 
 !SLIDE code small
@@ -48,7 +50,7 @@ In order for A to barge B (else A will retry):
 1. A must have been running for at least 1/100th of a second (BARGE_WAIT_NANOS)
 2. A started before B (favors older txns)
 3. B has a status of RUNNING and can be changed to KILLED
-# Barge 
+If B status is set to KILLED it will retry
 
     @@@ java
     private boolean barge(Info refinfo){
@@ -64,16 +66,4 @@ In order for A to barge B (else A will retry):
       return barged;
     }  
 
-    Object run(Callable fn) throws Exception{ 
-
-       // within the retry loop      
-      Info refinfo = ref.tinfo; 
-      if(refinfo != null && refinfo != info && refinfo.running())
-           {
-             if(!barge(refinfo))
-                throw retryex;
-           }  
-       ...
-      
-    }
 
