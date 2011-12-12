@@ -1,4 +1,4 @@
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 # Atoms 
 
 * Synchronous non transactional storage
@@ -31,14 +31,14 @@
 
     (let [thread (Thread. update-atom)]
       (.start thread)
-      (Thread/sleep 25) ; give thread time to call update-atom
-      (reset! x 3) ; happens after update-atom binds curr-val
-      (.join thread)) ; wait for thread to finish
+      (Thread/sleep 25) 
+      (reset! x 3) ; taken after curr-val set
+      (.join thread)) 
 
       (println @x) ; -> 3
 
 !SLIDE code execute
-.notes unlike CAS which fails, swap! repeatedly replay the function until no collision is made
+.notes unlike CAS which fails, swap! repeatedly replay the function until no collision is made we can see that its running twice
 # swap! 
 
     @@@ clojure
@@ -56,18 +56,18 @@
       (.start thread)
       (Thread/sleep 25) ; give swap! time to call update-atom
       (reset! x 3)
-      (.join thread)) ; wait for thread to finish
+      (.join thread)) 
 
     (println @x) ; -> 4
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 # Usage
 
 * Global state without coordination (memoization)
 * Reducing STM overhead
 
 !SLIDE code 
-# deref state and ctor
+.notes deref state and ctor, here we see that the atom stores the reference in an atomic container
 
     @@@ java
     final public class Atom extends ARef{
@@ -77,10 +77,7 @@
       this.state = new AtomicReference(state);
     }
 
-    public Atom(Object state, IPersistentMap meta){
-      super(meta);
-      this.state = new AtomicReference(state);
-    }
+    ...
 
     public Object deref(){
 	return state.get();
@@ -88,7 +85,7 @@
   
     
 !SLIDE code 
-# reset!  compare-and-set
+notes. reset!, compare-and-set implementation, nothing too exciting 
 
     @@@ java
      public Object reset(Object newval){
@@ -108,7 +105,7 @@
     } 
 
 !SLIDE code 
-# swap! 
+.notes swap! implementation, we see the loop as long as the compareAndSet fail the loop will carry on
 
     @@@ java
     public Object swap(IFn f, Object x, Object y, ISeq args) {
