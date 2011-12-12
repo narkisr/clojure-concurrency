@@ -15,8 +15,7 @@
     (println @x)
 
 !SLIDE code execute
-.notes CAS semantics
-# compare-and-set!
+.notes This compare-and-set! fails since we reset curr-val before the second thread had a chance to CAS.
 
     @@@ clojure
     (def x (atom 1))
@@ -25,21 +24,21 @@
 
     (defn update-atom []
       (let [curr-val @x]
-      (println "update-atom: curr-val =" curr-val) ; -> 1
-      (Thread/sleep 50) ; give reset! time to run
-      (println
-        (compare-and-set! x curr-val (inc curr-val))))) ; -> false
+        (println "update-atom: curr-val =" curr-val) ; -> 1
+        (Thread/sleep 50) ; give reset! time to run
+        (println
+          (compare-and-set! x curr-val (inc curr-val))))) ; -> false
 
-    (let [thread (Thread. #(update-atom))]
+    (let [thread (Thread. update-atom)]
       (.start thread)
-	(Thread/sleep 25) ; give thread time to call update-atom
+      (Thread/sleep 25) ; give thread time to call update-atom
       (reset! x 3) ; happens after update-atom binds curr-val
       (.join thread)) ; wait for thread to finish
 
       (println @x) ; -> 3
 
 !SLIDE code execute
-.notes swap! repeatedly replay the function until not collision is made
+.notes unlike CAS which fails, swap! repeatedly replay the function until no collision is made
 # swap! 
 
     @@@ clojure
