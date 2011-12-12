@@ -21,7 +21,6 @@ Concurrency deals with structuring our software to handle non deterministic cont
 !SLIDE bullets 
 .notes 
 Livelock Threads are often busy responding to one another, if two threads are responding endlessly to one another they are livelocked, it similar to two people passing in the same corridor each trying to give head way to another.
-
 Starvation happens when a thread tries to access a shared resource but get little or not access to it, if for example one threads calls frequently a long synchronized method on an object it locks that object for other threads.
 
 # Common issues

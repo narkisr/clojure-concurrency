@@ -27,8 +27,8 @@ A basic lock example, notice that the shorter version cannot complete until the 
             (Thread/sleep interval) 
             (str (java.util.Date.))))))
 
-    (def f1 (sleep-lock 1000))
-    (def f2 (sleep-lock 500))
+    (def f1 (sleep-lock 500))
+    (def f2 (sleep-lock 100))
     (println (str "longer " @f1))
     (println (str "shorter " @f2))
     
