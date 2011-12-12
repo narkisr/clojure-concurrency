@@ -45,6 +45,7 @@
 
 !SLIDE code small
 .notes 
+How framing is implemented:
  2. dvals holds current Frame which holds bindings and previous Frame, 
  3. pushThreadBindings invoked by bindings, stores a new Frame into dvals,
  4. A symmetric popThreadBindings pulls previous Frame.
@@ -60,7 +61,7 @@
       
    
       public static void pushThreadBindings(Associative bindings){
-        Frame f = dvals.get();
+        Frame f = dvals.get();// current frame
         Associative bmap = f.bindings;
         for(ISeq bs = bindings.seq(); bs != null; bs = bs.next())
               {
@@ -72,6 +73,7 @@
 
               v.validate(v.getValidator(), e.val());
               v.threadBound.set(true);
+              // assoc new Frame value
               bmap = bmap.assoc(v, new TBox(Thread.currentThread(), e.val()));
               }
         dvals.set(new Frame(bmap, f));
