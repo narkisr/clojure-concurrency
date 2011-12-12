@@ -7,13 +7,14 @@
 
 
 !SLIDE code execute
-.notes This example show how we send tasks to the agent and wait for it to finish processing
+.notes This example show how we send tasks to the agent and wait for it to finish processing, we use send-off and not send since it blocks, the difference is with the thread pools that will be used to process this, see next..
 
     @@@ clojure
     (def a (agent 5)) 
  
     (dotimes [i 5] 
-      (send a #(do (Thread/sleep 100) (inc %))))
+      ; we use send-of and not send
+      (send-off a #(do (Thread/sleep 100) (inc %))))
 
     (println "p1:" @a)
 
@@ -65,7 +66,7 @@
 
 !SLIDE code smaller
 .notes dispatchAction gets the current transaction, if it exists it sets the action on it
-       The Agent's queue implementation is based on Treiber's algorithm (see http://tinyurl.com/37mydc).
+       The Agent's queue implementation is based on Treiber's algorithm (see http://tinyurl.com/37mydc) for non blocking stack.
 
     @@@ java
      static void dispatchAction(Action action){
@@ -98,7 +99,7 @@
 
 
 !SLIDE code smaller
-.notes The execute invokes the action if send is used pooledExecutor is used (closer to the cpu count of threads less context switching) if send-of is used then a cached thread pool is used, a new Thread (potentially) will be created for each action (good for blocking actions).
+.notes The execute invokes the action, if send is used pooledExecutor is used (closer to the cpu count of threads less context switching) if send-of is used then a cached thread pool is used, a new Thread (potentially) will be created for each action (good for blocking actions).
 
       @@@ java
 	void execute(){
