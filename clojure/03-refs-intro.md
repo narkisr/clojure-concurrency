@@ -1,4 +1,4 @@
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 # Clojure reference types
 
 * Vars: global per thread value 

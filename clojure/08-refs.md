@@ -18,7 +18,7 @@
 ![Transaction](transaction.svg "transaction")
 
 !SLIDE code execute
-# alter
+.notes A basic alter example
 
     @@@ clojure
     (def account (ref 0))
@@ -35,7 +35,6 @@
 
 !SLIDE code execute
 .notes ref-set usage is frowned upon alter is preferable
-# ref-set 
 
     @@@ clojure
     (def account (ref 0))
@@ -50,7 +49,7 @@
       (println @account))
     
 !SLIDE code execute small
-# retry and commute
+.notes Here we how see an example for retries (T2 retries couple of times), this can be prevented in this case since + is commutative
 
     @@@ clojure
     (alter-var-root #'*out* (constantly *out*))
@@ -77,7 +76,7 @@
       (println @account))
     
 !SLIDE code execute small 
-# commute 
+.notes commute, here we use commute on a commutative operation (+) in order to avoid retries. 
 
     @@@ clojure
     (alter-var-root #'*out* (constantly *out*))
@@ -104,7 +103,7 @@
       (println @account))
 
 !SLIDE code execute smaller
-# write skew 
+.notes Write skew example http://paste.lisp.org/display/87117#1
 
     @@@ clojure
     (alter-var-root #'*out* (constantly *out*))
@@ -125,10 +124,9 @@
       (println @account1)
       (println @account2))
 
-http://paste.lisp.org/display/87117#1
 
 !SLIDE code execute smaller
-# ensure  
+.notes Here we use ensure to prevente the write skew issue
 
     @@@ clojure
     (alter-var-root #'*out* (constantly *out*))

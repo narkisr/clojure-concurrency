@@ -1,4 +1,4 @@
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 # Vars 
 
 * Per thread global store
@@ -25,7 +25,7 @@
       (.join thread)
       (println "p2:" v)) 
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 # Usage 
 
 * Per thread storage is required
@@ -34,7 +34,6 @@
 
 
 !SLIDE code 
-# Implementation ctor
 
     @@@ java
     Var(Namespace ns, Symbol sym, Object root){
@@ -45,11 +44,10 @@
 
 !SLIDE code small
 .notes 
-How framing is implemented:
+Framing implementation:
  2. dvals holds current Frame which holds bindings and previous Frame, 
  3. pushThreadBindings invoked by bindings, stores a new Frame into dvals,
  4. A symmetric popThreadBindings pulls previous Frame.
-# Framing implementation 
 
     @@@ java
 

@@ -23,7 +23,7 @@
 ![Persistent vector](persistentvector.png "persistent-vector")
 
 !SLIDE center
-.notes The binary partitioning scheme is to divide each level in the tree into 
+.notes The binary partitioning scheme is to divide each level in the tree into 5 bits, the most left hand bits are those of the root (relative the tree height)
 
 ![Bit partitioning](bit-partitioning.svg "binary-partitoining")
 

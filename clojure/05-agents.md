@@ -1,4 +1,4 @@
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 # Agents intro
 
 * Single value store
