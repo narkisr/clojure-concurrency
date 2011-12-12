@@ -35,15 +35,15 @@
     public Object nth(int i){
             ensureEditable();// transient access
             Object[] node = arrayFor(i);
-            return node[i & 0x01f];
+            return node[i & 0x01f];// the 0x01f masks the lower 5 bits
     } 
 
     private Object[] arrayFor(int i){
           if(i >= 0 && i < cnt) {
-             if(i >= tailoff())
+             if(i >= tailoff())// tail is the current insertion buffer
                 return tail;
              Node node = root;
-             for(int level = shift; level > 0; level -= 5)
+             for(int level = shift; level > 0; level -= 5) // shift is 5*(1+ h)
                node = (Node) node.array[(i >>> level) & 0x01f];
                return node.array;
              }
