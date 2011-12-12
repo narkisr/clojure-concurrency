@@ -15,7 +15,7 @@
 * Very error prone
 
 !SLIDE code execute
-.notes Yes locks in Clojure are possible, a but surprissing but the good java interop will enable Clojure in Clojure 
+.notes Yes locks in Clojure are possible, not too surprising since the good java interop should enable Clojure in Clojure 
 A basic lock example, notice that the shorter version cannot complete until the longer one releases its lock
 
     @@@ clojure
