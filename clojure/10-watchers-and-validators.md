@@ -15,8 +15,7 @@
 
 
 !SLIDE code execute 
-.notes We can add watchers, the watch fn will be called synchronously, on the agent's thread if an agent,
-before any pending sends if agent or ref. 
+.notes We can add watchers, the watch fn will be called synchronously, on the agent's thread if an agent, before any pending sends if agent or ref. 
 
     @@@ clojure
     (alter-var-root #'*out* (constantly *out*))
