@@ -84,7 +84,7 @@
 
     (def account (ref 0))
 
-    (defn deposit [amount] (commute account + amount %))
+    (defn deposit [amount] (commute account + amount))
 
     (def f1 (future 
           (dosync
