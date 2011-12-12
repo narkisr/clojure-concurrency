@@ -7,7 +7,7 @@
 * Mutation: set!, def, defn
 
 !SLIDE code execute
-# set! and binding
+.notes set! and binding
 
     @@@ clojure
     (def v 1)
@@ -42,7 +42,7 @@
       ++rev;
     }
 
-!SLIDE code small
+!SLIDE code smaller
 .notes 
 Framing implementation:
  2. dvals holds current Frame which holds bindings and previous Frame, 
@@ -50,8 +50,16 @@ Framing implementation:
  4. A symmetric popThreadBindings pulls previous Frame.
 
     @@@ java
-
     public final class Var extends ARef implements IFn, IRef, Settable{
+
+     static class Frame {
+	  Associative bindings; // Var->TBox
+	  Frame prev;
+
+      ...
+	
+     }
+
 
       static final ThreadLocal<Frame> dvals = new ThreadLocal<Frame>(){
          ...
