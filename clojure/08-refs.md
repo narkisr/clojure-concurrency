@@ -1,10 +1,10 @@
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 # Refs
 
 * Coordinated storage using STM
 * Mutation: ref-set, alter, commute 
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 .notes "Atomic" commit or retry, "Consistent" constraints on the data will not be violated, "Isolated" changes made inside a transaction are not visible outside the transaction until it commits
 # Transactions 
 * A unit of work

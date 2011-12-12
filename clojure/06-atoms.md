@@ -7,7 +7,6 @@
 
 !SLIDE code execute
 .notes replaces the current value without taking older value into account
-# reset!
 
     @@@ clojure
     (def x (atom 1))
@@ -35,11 +34,10 @@
       (reset! x 3) ; taken after curr-val set
       (.join thread)) 
 
-      (println @x) ; -> 3
+      (println @x)
 
 !SLIDE code execute
 .notes unlike CAS which fails, swap! repeatedly replay the function until no collision is made we can see that its running twice
-# swap! 
 
     @@@ clojure
     (alter-var-root #'*out* (constantly *out*))
@@ -58,7 +56,7 @@
       (reset! x 3)
       (.join thread)) 
 
-    (println @x) ; -> 4
+    (println @x)
 
 !SLIDE bullets incremental 
 # Usage
