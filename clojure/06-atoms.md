@@ -83,7 +83,7 @@
   
     
 !SLIDE code 
-notes. reset!, compare-and-set implementation, nothing too exciting 
+.notes reset!, compare-and-set implementation, nothing too exciting 
 
     @@@ java
      public Object reset(Object newval){

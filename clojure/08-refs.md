@@ -24,7 +24,7 @@
     (def account (ref 0))
 
     (defn deposit [amount]
-      (alter account #(+ amount %)))
+      (alter account + amount ))
 
     (def f (future (dosync (deposit 5))))
      
@@ -49,7 +49,9 @@
       (println @account))
     
 !SLIDE code execute small
-.notes Here we how see an example for retries (T2 retries couple of times), this can be prevented in this case since + is commutative
+.notes 
+Here we how see an example for retries (T2 retries couple of times), this can be prevented in this case since + is commutative
+The reason that T2 is being retried is because T1 is older and has tinfo set (meaning it made a write change)
 
     @@@ clojure
     (alter-var-root #'*out* (constantly *out*))
@@ -126,7 +128,7 @@
 
 
 !SLIDE code execute smaller
-.notes Here we use ensure to prevente the write skew issue
+.notes Here we use ensure to prevent the write skew issue, ensure prevents other transactions to perform write operations on the ref.
 
     @@@ clojure
     (alter-var-root #'*out* (constantly *out*))
