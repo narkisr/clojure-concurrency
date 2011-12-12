@@ -22,7 +22,7 @@
     
     (println "p2:" @a)
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 # Agents Usage
  
 * Accessing single threaded components
@@ -30,7 +30,7 @@
 * Queue processing 
 
 !SLIDE code small
-# send implementation 
+.noted send implementation is calling dispatch
 
     @@@ clojure
     (defn send
@@ -46,26 +46,28 @@
 
 !SLIDE code small 
 .notes dispatch creates a new actions and dispatches it
-       the quq
 # dispatch implementation
 
     @@@ java
-    public class Agent extends ARef { // ...
+    public class Agent extends ARef { 
+     
+      ...
 
       AtomicReference<ActionQueue> aq = new AtomicReference<ActionQueue>(ActionQueue.EMPTY);
 
       public Object dispatch(IFn fn, ISeq args, boolean solo) {
-        // ... 
+
+         ... 
+
         Action action = new Action(this, fn, args, solo);
         dispatchAction(action);
 
         return this;
-      } // ...  
+      } 
 
 !SLIDE code small 
 .notes dispatchAction gets the current transaction, if it exists it sets the action on it
        The Agent's queue implementation is based on Treiber's algorithm (see http://tinyurl.com/37mydc).
-# dispatch/push implementation cont .. 
 
     @@@ java
      static void dispatchAction(Action action){
@@ -78,7 +80,9 @@
              }
       else
          action.agent.enqueue(action);
-     } // ... 
+     } 
+
+     ... 
 
      void enqueue(Action action){ // push
        boolean queued = false;
@@ -91,12 +95,11 @@
  
        if(prior.q.count() == 0 && prior.error == null) // only first action 
              action.execute();
-     } // ... 
-    } // closing class
+     } 
 
     
 !SLIDE code smaller
-# pop implementation
+.notes pop implementation
  
     @@@ java
      static void doRun(Action action){// invoked from run in a Thread 
@@ -116,7 +119,9 @@
                         {
                         error = e;
                         }
-                  // ... 
+
+                  ... 
+
                   boolean popped = false;
                   ActionQueue next = null;
                   while(!popped)
@@ -130,5 +135,7 @@
                        ((Action) next.q.peek()).execute();
                   }
             finally
-            // ...	
+
+             ...	
+
        }
