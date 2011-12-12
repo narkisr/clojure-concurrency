@@ -1,5 +1,5 @@
 !SLIDE bullets 
-
+.notes Clojure takes immutability one step further
 # Persistent data structures
 
 * Implemented as 32 bit partitioned trees
@@ -7,6 +7,7 @@
 * Data sharing 
 
 !SLIDE code style execute
+.notes Here we see that the original value hasn't changed
 # Immutability 
 
     @@@ clojure
@@ -17,17 +18,18 @@
     (println a)
 
 !SLIDE full-page-image
+.notes Clojure ADT are implemented as 32bit partitioned trees, in this case we see the tree of a vector
 
 ![Persistent vector](persistentvector.png "persistent-vector")
 
-!SLIDE full-page-image
+!SLIDE center
+.notes The binary partitioning scheme is to divide each level in the tree into 
 
-![Persistent vector](bin-map.png "binary partitoining")
+![Bit partitioning](bit-partitioning.svg "binary-partitoining")
 
 !SLIDE code small
-
+.notes arrayFor is looking for the matching level node, the loop goes through 5 bits at a time shifting 
 # Nth 
-.notes an explanation on the binary bits should come first
 
     @@@ java
     public Object nth(int i){
