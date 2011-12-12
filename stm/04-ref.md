@@ -37,7 +37,7 @@
 * This causes a retry and increment the faults [counter](/#54)
 * First commit on faulty Ref will be added to tvals 
 
-!SLIDE bullets incremental transition=fade
+!SLIDE bullets incremental 
 .notes A knows that according to the tinfo field on the Ref
 # Write conflict and Barging
 

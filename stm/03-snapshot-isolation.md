@@ -1,8 +1,9 @@
 !SLIDE subsection
-.notes vals include commuted values (unlike sets)
 # Snapshot isolation  
 
 !SLIDE code style small 
+.notes vals include commuted values (unlike sets)
+
     @@@ java
     // modified by current TX Refs -> in-transaction values. 
     final HashMap<Ref, Object> vals = new HashMap<Ref, Object>();
@@ -10,6 +11,19 @@
     // Refs modified by current TX by using ref-set or alter 
     final HashSet<Ref> sets = new HashSet<Ref>(); 
    
+!SLIDE code smaller
+.notes here we see alter, it gets the old value, applies the fn to it and sets it back 
+
+    @@@ java
+    public class Ref extends ARef implements IFn, Comparable<Ref>, IRef{ 
+
+     ...
+
+     public Object alter(IFn fn, ISeq args) {
+       LockingTransaction t = LockingTransaction.getEx();
+       return t.doSet(this, fn.applyTo(RT.cons(t.doGet(this), args)));
+     }
+
 !SLIDE code smaller
 .notes Here we see how ref value is obtained within the TX (alter calls it), if it doesn't have a TX value the value is looked for in the tvals
 
