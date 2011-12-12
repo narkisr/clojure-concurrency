@@ -135,7 +135,7 @@ Starvation happens when a thread tries to access a shared resource but get littl
 </ul>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute" ref="agenda/02_approch/3">
-<p class="notes">Yes locks in Clojure are possible, a but surprissing but the good java interop will enable Clojure in Clojure 
+<p class="notes">Yes locks in Clojure are possible, not too surprising since the good java interop should enable Clojure in Clojure 
 A basic lock example, notice that the shorter version cannot complete until the longer one releases its lock</p>
 
 <pre class="sh_clojure"><code>(def o (Object.))
@@ -211,7 +211,7 @@ A basic lock example, notice that the shorter version cannot complete until the 
 </p>
 </div>
 </div><div class="slide" data-transition="none"><div class="content center" ref="clojure/02_adts/4">
-<p class="notes">The binary partitioning scheme is to divide each level in the tree into </p>
+<p class="notes">The binary partitioning scheme is to divide each level in the tree into 5 bits, the most left hand bits are those of the root (relative the tree height)</p>
 
 <p><img src="./file/clojure/bit-partitioning.svg" alt="Bit partitioning" title="binary-partitoining">
 </img>
@@ -240,7 +240,7 @@ private Object[] arrayFor(int i){
        throw new IndexOutOfBoundsException();
  } </code></pre>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/03-refs-intro/1">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="clojure/03-refs-intro/1">
 <h1>Clojure reference types</h1>
 
 <ul>
@@ -273,7 +273,7 @@ private Object[] arrayFor(int i){
 <td align="center">Atom</td>
 </tr>
 </tbody></table></div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/04-vars/1">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="clojure/04-vars/1">
 <h1>Vars</h1>
 
 <ul>
@@ -284,7 +284,7 @@ private Object[] arrayFor(int i){
 </ul>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/04-vars/2">
-<h1>set! and binding</h1>
+<p class="notes">set! and binding</p>
 
 <pre class="sh_clojure"><code>(def v 1)
 
@@ -301,7 +301,7 @@ private Object[] arrayFor(int i){
   (.join thread)
   (println "p2:" v)) </code></pre>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/04-vars/3">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="clojure/04-vars/3">
 <h1>Usage</h1>
 
 <ul>
@@ -311,25 +311,29 @@ private Object[] arrayFor(int i){
 </ul>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code" ref="clojure/04-vars/4">
-<h1>Implementation ctor</h1>
-
 <pre class="sh_java"><code>Var(Namespace ns, Symbol sym, Object root){
   this(ns, sym);
   this.root = root;
   ++rev;
 }</code></pre>
 </div>
-</div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/04-vars/5">
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="clojure/04-vars/5">
 <p class="notes">
-How framing is implemented:
+Framing implementation:
  2. dvals holds current Frame which holds bindings and previous Frame, 
  3. pushThreadBindings invoked by bindings, stores a new Frame into dvals,
  4. A symmetric popThreadBindings pulls previous Frame.</p>
 
-<h1>Framing implementation</h1>
+<pre class="sh_java"><code>public final class Var extends ARef implements IFn, IRef, Settable{
 
-<pre class="sh_java"><code>
-public final class Var extends ARef implements IFn, IRef, Settable{
+ static class Frame {
+  Associative bindings; // Var-&gt;TBox
+  Frame prev;
+
+  ...
+
+ }
+
 
   static final ThreadLocal&lt;Frame&gt; dvals = new ThreadLocal&lt;Frame&gt;(){
      ...
@@ -358,7 +362,7 @@ public final class Var extends ARef implements IFn, IRef, Settable{
    ...
 }</code></pre>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/05-agents/1">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="clojure/05-agents/1">
 <h1>Agents intro</h1>
 
 <ul>
@@ -368,14 +372,13 @@ public final class Var extends ARef implements IFn, IRef, Settable{
 </ul>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/05-agents/2">
-<p class="notes">an example on how await works</p>
-
-<h1>Agents example</h1>
+<p class="notes">This example show how we send tasks to the agent and wait for it to finish processing, we use send-off and not send since it blocks, the difference is with the thread pools that will be used to process this, see next..</p>
 
 <pre class="sh_clojure"><code>(def a (agent 5)) 
 
 (dotimes [i 5] 
-  (send a #(do (Thread/sleep 100) (inc %))))
+  ; we use send-of and not send
+  (send-off a #(do (Thread/sleep 100) (inc %))))
 
 (println "p1:" @a)
 
@@ -393,7 +396,7 @@ public final class Var extends ARef implements IFn, IRef, Settable{
 </ul>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/05-agents/4">
-<p class="noted">send implementation is calling dispatch</p>
+<p class="noted">The send implementation is calling dispatch</p>
 
 <pre class="sh_clojure"><code>(defn send
  "Dispatch an action to an agent. Returns the agent immediately.
@@ -406,10 +409,8 @@ public final class Var extends ARef implements IFn, IRef, Settable{
   [^clojure.lang.Agent a f &amp; args]
   (.dispatch a (binding [*agent* a] (binding-conveyor-fn f)) args false)) </code></pre>
 </div>
-</div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/05-agents/5">
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="clojure/05-agents/5">
 <p class="notes">dispatch creates a new actions and dispatches it</p>
-
-<h1>dispatch implementation</h1>
 
 <pre class="sh_java"><code>public class Agent extends ARef { 
 
@@ -427,15 +428,15 @@ public final class Var extends ARef implements IFn, IRef, Settable{
     return this;
   } </code></pre>
 </div>
-</div><div class="slide" data-transition="none"><div class="content code small" ref="clojure/05-agents/6">
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="clojure/05-agents/6">
 <p class="notes">dispatchAction gets the current transaction, if it exists it sets the action on it
-       The Agent's queue implementation is based on Treiber's algorithm (see http://tinyurl.com/37mydc).</p>
+       The Agent's queue implementation is based on Treiber's algorithm (see http://tinyurl.com/37mydc) for non blocking stack.</p>
 
 <pre class="sh_java"><code> static void dispatchAction(Action action){
    LockingTransaction trans = LockingTransaction.getRunning();
-   if(trans != null)
+   if(trans != null)// if called within transaction
         trans.enqueue(action);
-   else if(nested.get() != null)// not sure what nested is
+   else if(nested.get() != null)
          {
          nested.set(nested.get().cons(action));
          }
@@ -445,21 +446,46 @@ public final class Var extends ARef implements IFn, IRef, Settable{
 
  ... 
 
- void enqueue(Action action){ // push
+ void enqueue(Action action){// push
    boolean queued = false;
    ActionQueue prior = null;
-   while(!queued)// if we didn't manage to CAS 
+   while(!queued)// while we didn't manage to CAS 
          {
          prior = aq.get();
-         queued = aq.compareAndSet(prior, new ActionQueue((IPersistentStack)prior.q.cons(action), prior.error));
+         queued = aq.compareAndSet(prior, 
+            new ActionQueue((IPersistentStack)prior.q.cons(action), prior.error));
          }
 
-   if(prior.q.count() == 0 &amp;&amp; prior.error == null) // only first action 
+   if(prior.q.count() == 0 &amp;&amp; prior.error == null)// only first action 
          action.execute();
  } </code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code smaller" ref="clojure/05-agents/7">
-<p class="notes">pop implementation</p>
+<p class="notes">The execute invokes the action, if send is used pooledExecutor is used (closer to the cpu count of threads less context switching) if send-of is used then a cached thread pool is used, a new Thread (potentially) will be created for each action (good for blocking actions).</p>
+
+<pre class="sh_java"><code>void execute(){
+    try
+        {
+        if(solo)
+            soloExecutor.execute(this);// dynamic pool 
+        else
+            pooledExecutor.execute(this);// fixed size pool (cpu cores + 2)
+        }
+    catch(Throwable error)
+        {
+        if(agent.errorHandler != null)
+            {
+            try
+                {
+                agent.errorHandler.invoke(agent, error);
+                }
+            catch(Throwable e) {} // ignore errorHandler errors
+            }
+        }
+}</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="clojure/05-agents/8">
+<p class="notes">pop implementation, each one of these is running a seperate thread, the if before the finally is pulling the next message</p>
 
 <pre class="sh_java"><code> static void doRun(Action action){// invoked from run in a Thread 
         try
@@ -468,27 +494,27 @@ public final class Var extends ARef implements IFn, IRef, Settable{
 
               Throwable error = null;
               try
-                    {
-                    Object oldval = action.agent.state;
-                    Object newval =  action.fn.applyTo(RT.cons(action.agent.state, action.args));
-                    action.agent.setState(newval);
-                    action.agent.notifyWatches(oldval,newval);
-                    }
+                  {// the current message processing
+                   Object oldval = action.agent.state;
+                   Object newval =  action.fn.applyTo(RT.cons(action.agent.state, action.args));
+                   action.agent.setState(newval);
+                   action.agent.notifyWatches(oldval,newval);
+                  }
              catch(Throwable e)
-                    {
-                    error = e;
-                    }
+                  {
+                   error = e;
+                  }
 
               ... 
 
               boolean popped = false;
               ActionQueue next = null;
               while(!popped)
-                    {
-                    ActionQueue prior = action.agent.aq.get();
-                    next = new ActionQueue(prior.q.pop(), error);
-                    popped = action.agent.aq.compareAndSet(prior, next);
-                    }
+                  {
+                   ActionQueue prior = action.agent.aq.get();
+                   next = new ActionQueue(prior.q.pop(), error);
+                   popped = action.agent.aq.compareAndSet(prior, next);
+                  }
 
               if(error == null &amp;&amp; next.q.count() &gt; 0) // pulling more actions
                    ((Action) next.q.peek()).execute();
@@ -499,7 +525,7 @@ public final class Var extends ARef implements IFn, IRef, Settable{
 
    }</code></pre>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/06-atoms/1">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="clojure/06-atoms/1">
 <h1>Atoms</h1>
 
 <ul>
@@ -510,8 +536,6 @@ public final class Var extends ARef implements IFn, IRef, Settable{
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/06-atoms/2">
 <p class="notes">replaces the current value without taking older value into account</p>
-
-<h1>reset!</h1>
 
 <pre class="sh_clojure"><code>(def x (atom 1))
 (reset! x 2)
@@ -533,16 +557,14 @@ public final class Var extends ARef implements IFn, IRef, Settable{
 
 (let [thread (Thread. update-atom)]
   (.start thread)
-  (Thread/sleep 25) ; give thread time to call update-atom
-  (reset! x 3) ; happens after update-atom binds curr-val
-  (.join thread)) ; wait for thread to finish
+  (Thread/sleep 25) 
+  (reset! x 3) ; taken after curr-val set
+  (.join thread)) 
 
-  (println @x) ; -&gt; 3</code></pre>
+  (println @x)</code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/06-atoms/4">
-<p class="notes">unlike CAS which fails, swap! repeatedly replay the function until no collision is made</p>
-
-<h1>swap!</h1>
+<p class="notes">unlike CAS which fails, swap! repeatedly replay the function until no collision is made we can see that its running twice</p>
 
 <pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
 
@@ -558,11 +580,11 @@ public final class Var extends ARef implements IFn, IRef, Settable{
   (.start thread)
   (Thread/sleep 25) ; give swap! time to call update-atom
   (reset! x 3)
-  (.join thread)) ; wait for thread to finish
+  (.join thread)) 
 
-(println @x) ; -&gt; 4</code></pre>
+(println @x)</code></pre>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/06-atoms/5">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="clojure/06-atoms/5">
 <h1>Usage</h1>
 
 <ul>
@@ -571,7 +593,7 @@ public final class Var extends ARef implements IFn, IRef, Settable{
 </ul>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code" ref="clojure/06-atoms/6">
-<h1>deref state and ctor</h1>
+<p class="notes">deref state and ctor, here we see that the atom stores the reference in an atomic container</p>
 
 <pre class="sh_java"><code>final public class Atom extends ARef{
 final AtomicReference state;
@@ -580,17 +602,14 @@ public Atom(Object state){
   this.state = new AtomicReference(state);
 }
 
-public Atom(Object state, IPersistentMap meta){
-  super(meta);
-  this.state = new AtomicReference(state);
-}
+...
 
 public Object deref(){
 return state.get();
 } </code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code" ref="clojure/06-atoms/7">
-<h1>reset!  compare-and-set</h1>
+<p class="notes">reset!, compare-and-set implementation, nothing too exciting </p>
 
 <pre class="sh_java"><code> public Object reset(Object newval){
    Object oldval = state.get();
@@ -609,7 +628,7 @@ public boolean compareAndSet(Object oldv, Object newv){
 } </code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code" ref="clojure/06-atoms/8">
-<h1>swap!</h1>
+<p class="notes">swap! implementation, we see the loop as long as the compareAndSet fail the loop will carry on</p>
 
 <pre class="sh_java"><code>public Object swap(IFn f, Object x, Object y, ISeq args) {
   for(; ;)
@@ -625,7 +644,7 @@ public boolean compareAndSet(Object oldv, Object newv){
       }
 }  </code></pre>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/08-refs/1">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="clojure/08-refs/1">
 <h1>Refs</h1>
 
 <ul>
@@ -633,7 +652,7 @@ public boolean compareAndSet(Object oldv, Object newv){
 <li>Mutation: ref-set, alter, commute </li>
 </ul>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="clojure/08-refs/2">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="clojure/08-refs/2">
 <p class="notes">"Atomic" commit or retry, "Consistent" constraints on the data will not be violated, "Isolated" changes made inside a transaction are not visible outside the transaction until it commits</p>
 
 <h1>Transactions</h1>
@@ -654,12 +673,12 @@ public boolean compareAndSet(Object oldv, Object newv){
 </p>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/08-refs/4">
-<h1>alter</h1>
+<p class="notes">A basic alter example</p>
 
 <pre class="sh_clojure"><code>(def account (ref 0))
 
 (defn deposit [amount]
-  (alter account #(+ amount %)))
+  (alter account + amount ))
 
 (def f (future (dosync (deposit 5))))
 
@@ -669,8 +688,6 @@ public boolean compareAndSet(Object oldv, Object newv){
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/08-refs/5">
 <p class="notes">ref-set usage is frowned upon alter is preferable</p>
-
-<h1>ref-set</h1>
 
 <pre class="sh_clojure"><code>(def account (ref 0))
 
@@ -684,7 +701,9 @@ public boolean compareAndSet(Object oldv, Object newv){
   (println @account))</code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute small" ref="clojure/08-refs/6">
-<h1>retry and commute</h1>
+<p class="notes">
+Here we how see an example for retries (T2 retries couple of times), this can be prevented in this case since + is commutative
+The reason that T2 is being retried is because T1 is older and has tinfo set (meaning it made a write change)</p>
 
 <pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
 
@@ -710,13 +729,13 @@ public boolean compareAndSet(Object oldv, Object newv){
   (println @account))</code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute small" ref="clojure/08-refs/7">
-<h1>commute</h1>
+<p class="notes">commute, here we use commute on a commutative operation (+) in order to avoid retries. </p>
 
 <pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
 
 (def account (ref 0))
 
-(defn deposit [amount] (commute account + amount %))
+(defn deposit [amount] (commute account + amount))
 
 (def f1 (future 
       (dosync
@@ -736,7 +755,7 @@ public boolean compareAndSet(Object oldv, Object newv){
   (println @account))</code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute smaller" ref="clojure/08-refs/8">
-<h1>write skew</h1>
+<p class="notes">Write skew example http://paste.lisp.org/display/87117#1</p>
 
 <pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
 
@@ -755,11 +774,9 @@ public boolean compareAndSet(Object oldv, Object newv){
   (dorun (apply pcalls (interleave deposits1 deposits2)))
   (println @account1)
   (println @account2))</code></pre>
-
-<p>http://paste.lisp.org/display/87117#1</p>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code execute smaller" ref="clojure/08-refs/9">
-<h1>ensure</h1>
+<p class="notes">Here we use ensure to prevent the write skew issue, ensure prevents other transactions to perform write operations on the ref.</p>
 
 <pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
 
@@ -780,6 +797,33 @@ public boolean compareAndSet(Object oldv, Object newv){
   (dorun (apply pcalls (interleave deposits1 deposits2)))
   (println @account1)
   (println @account2))</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/10-watchers-and-validators/1">
+<p class="notes">We can set validators on var/ref/agent/atom </p>
+
+<pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
+
+(def num (ref 0 :validator integer?))
+
+(try
+  (dosync
+    (ref-set num 1) 
+    ; no commit, transaction is aborted
+    (ref-set num "foo")) 
+      (catch Exception e (println (str e))))</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="clojure/10-watchers-and-validators/2">
+<p class="notes">We can add watchers, the watch fn will be called synchronously, on the agent's thread if an agent, before any pending sends if agent or ref. </p>
+
+<pre class="sh_clojure"><code>(alter-var-root #'*out* (constantly *out*))
+
+(def num (ref 0))
+
+(add-watch num nil 
+  (fn [key ref old new] (println old new )))
+
+  (dosync
+    (ref-set num "foo"))</code></pre>
 </div>
 </div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="stm/01-intro">
 <h1>Clojure STM</h1>
@@ -870,11 +914,11 @@ The run method is the core of the transaction lifecycle, in it the retry loop is
 }</code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content subsection" ref="stm/03-snapshot-isolation/1">
-<p class="notes">vals include commuted values (unlike sets)</p>
-
 <h1>Snapshot isolation</h1>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code style small" ref="stm/03-snapshot-isolation/2">
+<p class="notes">vals include commuted values (unlike sets)</p>
+
 <pre class="sh_java"><code>// modified by current TX Refs -&gt; in-transaction values. 
 final HashMap&lt;Ref, Object&gt; vals = new HashMap&lt;Ref, Object&gt;();
 
@@ -882,6 +926,18 @@ final HashMap&lt;Ref, Object&gt; vals = new HashMap&lt;Ref, Object&gt;();
 final HashSet&lt;Ref&gt; sets = new HashSet&lt;Ref&gt;(); </code></pre>
 </div>
 </div><div class="slide" data-transition="none"><div class="content code smaller" ref="stm/03-snapshot-isolation/3">
+<p class="notes">here we see alter, it gets the old value, applies the fn to it and sets it back </p>
+
+<pre class="sh_java"><code>public class Ref extends ARef implements IFn, Comparable&lt;Ref&gt;, IRef{ 
+
+ ...
+
+ public Object alter(IFn fn, ISeq args) {
+   LockingTransaction t = LockingTransaction.getEx();
+   return t.doSet(this, fn.applyTo(RT.cons(t.doGet(this), args)));
+ }</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="stm/03-snapshot-isolation/4">
 <p class="notes">Here we see how ref value is obtained within the TX (alter calls it), if it doesn't have a TX value the value is looked for in the tvals</p>
 
 <pre class="sh_java"><code>Object doGet(Ref ref){
@@ -911,7 +967,7 @@ final HashSet&lt;Ref&gt; sets = new HashSet&lt;Ref&gt;(); </code></pre>
   throw retryex;
  }</code></pre>
 </div>
-</div><div class="slide" data-transition="none"><div class="content code smaller" ref="stm/03-snapshot-isolation/4">
+</div><div class="slide" data-transition="none"><div class="content code smaller" ref="stm/03-snapshot-isolation/5">
 <p class="notes">The symetric set value method</p>
 
 <pre class="sh_java"><code>Object doSet(Ref ref, Object val){
@@ -972,7 +1028,7 @@ final HashSet&lt;Ref&gt; sets = new HashSet&lt;Ref&gt;(); </code></pre>
 <li>First commit on faulty Ref will be added to tvals </li>
 </ul>
 </div>
-</div><div class="slide" data-transition="fade"><div class="content bullets incremental" ref="stm/04-ref/5">
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="stm/04-ref/5">
 <p class="notes">A knows that according to the tinfo field on the Ref</p>
 
 <h1>Write conflict and Barging</h1>
@@ -1058,6 +1114,33 @@ Object lock(Ref ref){
               ref.lock.writeLock().unlock();
         }
 }</code></pre>
+</div>
+</div><div class="slide" data-transition="none"><div class="content subsection" ref="summary/01-about/1">
+<h1>Commit the talk</h1>
+</div>
+</div><div class="slide" data-transition="none"><div class="content bullets" ref="summary/01-about/2">
+<h1>Find me online</h1>
+
+<ul>
+<li>Twitter <a href="http://twitter.com/#!/narkisr/">@narkisr</a><br/>
+<li>My projects on <a href="https://github.com/narkisr">github</a> </li>
+<li>Blog <a href="http://narkisr.com">narkisr.com</a></li>
+<li>Linkedin <a href="http://il.linkedin.com/in/narkisr">profile</a> </li>
+</li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="summary/02-biblio">
+<h1>STM Resources</h1>
+
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/Snapshot_isolation">Snapshot isolation</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Multiversion_concurrency_control">MVCC</a></li>
+<li><a href="http://java.ociweb.com/mark/stm/article.html">Clojure STM article</a></li>
+<li><a href="http://www.haskell.org/haskellwiki/Software_transactional_memory">Haskell STM</a></li>
+<li>Haskell STM <a href="http://www.haskell.org/haskellwiki/Software_transactional_memory">chapter</a> in <a href="http://www.amazon.com/Beautiful-Code-Leading-Programmers-Practice/dp/0596510047">Beautiful code</a> </li>
+<li><a href="http://blog.higher-order.net/2009/09/08/understanding-clojures-persistenthashmap-deftwice/">Persistent map </a> and <a href="http://blog.higher-order.net/2009/02/01/understanding-clojures-persistentvector-implementation/">vector</a> implementations.</li>
+<li><a href="https://github.com/clojure/clojure">Clojure source code</a></li>
+</ul>
 </div>
 </div></div>
 
