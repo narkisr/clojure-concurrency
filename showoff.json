@@ -3,6 +3,7 @@
     {"section":"agenda"},
     {"section":"clojure"},
     {"section":"stm"},
+    {"section":"avout"},
     {"section":"summary"}
    ]
 }
