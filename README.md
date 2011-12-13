@@ -2,6 +2,7 @@ An intro presentation about concurrency in Clojure, the static slide show can be
 
 In order to follow along and run the code examples:
 
+```bash
 $ git clone  git://github.com/narkisr/showoff.git
 $ cd showoff
 $ gem install bundle
@@ -12,4 +13,5 @@ $ gem install cake
 $ git clone  git://github.com/narkisr/clojure-concurrency.git
 $ cd clojure-concurrency
 $ ./start-presentation.sh
+```
 

@@ -1115,6 +1115,31 @@ Object lock(Ref ref){
         }
 }</code></pre>
 </div>
+</div><div class="slide" data-transition="none"><div class="content subsection" ref="avout/01-intro/1">
+<h1>Distributed STM</h1>
+</div>
+</div><div class="slide" data-transition="none"><div class="content bullets incremental" ref="avout/01-intro/2">
+<h1>Avout</h1>
+
+<ul>
+<li>Uses zookeeper to manage distributed locks</li>
+<li>Has Refs for different backends like MongoDB, Zookeeper and local-ref</li>
+<li>Similar mutation semantics reset!!, swap!!, dosync!!, ref-set!!, alter!!, commute!! </li>
+</ul>
+</div>
+</div><div class="slide" data-transition="none"><div class="content code execute" ref="avout/01-intro/3">
+<pre class="sh_clojure"><code>(use 'avout.core)
+(def client (connect "127.0.0.1"))
+
+(def r0 (zk-ref client "/r0" 0))
+(def r1 (zk-ref client "/r1" []))
+
+(dosync!! client
+  (alter!! r0 inc)
+  (alter!! r1 conj @r0))
+
+(println @r1)</code></pre>
+</div>
 </div><div class="slide" data-transition="none"><div class="content subsection" ref="summary/01-about/1">
 <h1>Commit the talk</h1>
 </div>
